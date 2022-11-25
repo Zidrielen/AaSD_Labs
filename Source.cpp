@@ -18,6 +18,7 @@ void menu()
 	std::cout << "\nEnter the number: ";
 }
 
+//int, float and double
 template<typename T>
 struct Points { T x, y; };
 
@@ -172,6 +173,7 @@ void Broken<T>::set_n() { n++; }
 
 //----------------------------------------------------------
 
+//std::complex<float> and std::complex<double>
 template<typename S>
 class Broken<std::complex<S>>
 {
@@ -323,6 +325,7 @@ void Broken<std::complex<S>>::set_n() { n++; }
 
 //----------------------------------------------------------
 
+//functions for int, float and double
 template<typename T>
 void create_polyline(Broken<T>* mas_obj, int* count)
 {
@@ -504,6 +507,8 @@ void add_task(Broken<T>* mas_obj, int* count)
 
 //---------------------------------------------------------
 
+
+//functions for std::complex<float> and std::complex<double>
 template<typename S>
 void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 {
