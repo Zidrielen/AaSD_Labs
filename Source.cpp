@@ -28,13 +28,12 @@ void menu()
 
 //in this block methods are similar to methods for std::complex (see below)
 template<typename T>
-class Broken 
+class Broken
 {
 private:
 	Points<T>* data;
 	int cap, n;
 	void memory();
-	const double lambda = 0.000001;
 
 public:
 	Broken();
@@ -48,6 +47,8 @@ public:
 	Points<T>& operator [](int);
 	int get_cap() const;
 	friend std::ostream& operator<<(std::ostream&, const Points<T>&);
+	friend bool operator ==(const Points<T>&, const Points<T>&);
+	friend bool operator !=(const Points<T>&, const Points<T>&);
 	int get_n() const;
 	void operator =(const Broken<T>&);
 	void set_n();
@@ -97,6 +98,8 @@ double Broken<T>::len_broken()
 	double sum = 0;
 
 	for (int i = 0; i < n - 1; i++) {
+		if (i >= 1 && i < n - 1 && data[i - 1] == data[i + 1]) continue;
+
 		double x = 0, y = 0;
 
 		x = pow(data[i].x - data[i + 1].x, 2);
@@ -106,6 +109,22 @@ double Broken<T>::len_broken()
 	}
 
 	return sum;
+}
+
+template<typename T>
+bool operator==(const Points<T> p1, const Points<T>& p2)
+{
+	if (fabs(p1.x - p2.x) > 0.000001) return false;
+	if (fabs(p1.y - p2.y) > 0.000001) return false;
+	return true;
+}
+
+template<typename T>
+bool operator!=(const Points<T> p1, const Points<T>& p2)
+{
+	if (fabs(p1.x - p2.x) < 0.000001) return false;
+	if (fabs(p1.y - p2.y) < 0.000001) return false;
+	return true;
 }
 
 template<typename T>
@@ -211,6 +230,8 @@ public:
 	std::complex<S>& operator [](int);
 	int get_cap() const;
 	friend std::ostream& operator<<(std::ostream&, const std::complex<S>&);
+	friend bool operator ==(std::complex<S>&, std::complex<S>&);
+	friend bool operator !=(std::complex<S>&, std::complex<S>&);
 	int get_n() const;
 	void operator =(const Broken<std::complex<S>>&);
 	void set_n();
@@ -266,6 +287,8 @@ double Broken<std::complex<S>>::len_broken()
 	double sum = 0;
 
 	for (int i = 0; i < n - 1; i++) {
+		if (i >= 1 && i < n - 1 && data[i - 1] == data[i + 1]) continue;
+
 		double x = 0, y = 0;
 
 		x = pow(data[i].real() - data[i + 1].real(), 2);
@@ -311,6 +334,24 @@ template<typename S>
 std::ostream& operator<<(std::ostream& os, const std::complex<S> c)
 {
 	return os << "(" << c.real() << ", " << c.imag() << ") ";
+}
+
+//Comparing vertices for equality
+template<typename S>
+bool operator==(std::complex<S>& c1, std::complex<S>& c2)
+{
+	if (fabs(c1.real() - c2.real()) > 0.000001) return false;
+	if (fabs(c1.imag() - c2.imag()) > 0.000001) return false;
+	return true;
+}
+
+//Comparing vertices for inequality
+template<typename S>
+bool operator!=(std::complex<S>& c1, std::complex<S>& c2)
+{
+	if (fabs(c1.real() - c2.real()) < 0.000001) return false;
+	if (fabs(c1.imag() - c2.imag()) < 0.000001) return false;
+	return true;
 }
 
 //Adding a vertex to the beginning of a polyline (for std::complex)
@@ -423,7 +464,7 @@ void output_vertices(Broken<T>* mas_obj, int count)
 	for (int i = 0; i < mas_obj[n].get_n(); i++)
 	{
 		std::cout << mas_obj[n][i];
-		if (i < mas_obj[n].get_n() - 1) std::cout << "<- ";
+		if (i < mas_obj[n].get_n() - 1) std::cout << "-> ";
 	}
 
 	std::cout << "\n\n";
@@ -686,10 +727,10 @@ void add_task(Broken<std::complex<S>>* mas_obj, int* count)
 //Main function
 int main() 
 {
-	Broken<int> mas_obj[20];
+	//Broken<int> mas_obj[20];
 	//Broken<float> mas_obj[20];
 	//Broken<double> mas_obj[20];
-	//Broken<std::complex<float>> mas_obj[20];
+	Broken<std::complex<float>> mas_obj[20];
 	//Broken<std::complex<double>> mas_obj[20];
 
 	int n = 0;
@@ -718,3 +759,6 @@ int main()
 		}
 	}
 }
+
+//При определении дружественного оператора сравнения на равенство/неравенство
+//мы не писали const, потому что метод real и imag НЕ ЯВЛЯЮТСЯ КОНСТАНТНЫМИ.
