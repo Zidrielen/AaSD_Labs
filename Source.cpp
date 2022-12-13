@@ -42,14 +42,17 @@ void choose_type()
 void menu()
 {
 	std::cout << "1. Create a polyline\n";
-	std::cout << "2. Get all vertices of a particular polyline\n";
-	std::cout << "3. Get the length of a specific polyline\n";
-	std::cout << "4. Add a vertex to the beginning of a specific polyline\n";
-	std::cout << "5. Add a vertex to the end of a certain polyline\n";
-	std::cout << "6. Create a polyline that is the 'sum' of two polylines\n";
-	std::cout << "7. Create a polyline in the form of an isosceles triangle\n";
-	std::cout << "8. Change precision\n";
-	std::cout << "9. Exit the program\n";
+	std::cout << "2. Overwrite the vertex\n";
+	std::cout << "3. Output the vertex\n";
+	std::cout << "4. Get all vertices of a particular polyline\n";
+	std::cout << "5. Get the length of a specific polyline\n";
+	std::cout << "6. Add a vertex to the beginning of a specific polyline\n";
+	std::cout << "7. Add a vertex to the end of a certain polyline\n";
+	std::cout << "8. Create a polyline that is the 'sum' of two polylines\n";
+	std::cout << "9. Create a polyline in the form of an isosceles triangle\n";
+	std::cout << "10. Compare broken lines\n";
+	std::cout << "11. Change precision\n";
+	std::cout << "12. Exit the program\n";
 	std::cout << "\nEnter the number: ";
 }
 
@@ -76,6 +79,8 @@ public:
 	void operator +=(const Points<T>&);
 	template<typename V> friend void operator +=(const Points<V>&, Broken<V>&);
 	template<typename V> friend std::ostream& operator <<(std::ostream&, const Broken<V>&);
+	bool operator ==(const Broken<T>&);
+	bool operator !=(const Broken<T>&);
 	Points<T>& operator [](int);
 	int get_cap() const;
 	int get_n() const;
@@ -154,12 +159,12 @@ double Broken<T>::len_broken_complex() const
 	for (int i = 0; i < n - 1; i++) {
 		if (i >= 1 && i < n - 1 && data[i - 1] == data[i + 1]) continue;
 
-		std::complex<double> x, y;
+		T z1, z2;
 
-		x = data[i].x - data[i + 1].x;
-		y = data[i].y - data[i + 1].y;
+		z1 = data[i].x - data[i + 1].x;
+		z2 = data[i].y - data[i + 1].y;
 
-		sum += sqrt(pow(std::abs(x), 2) + pow(std::abs(y), 2));
+		sum += sqrt(pow(std::abs(z1), 2) + pow(std::abs(z2), 2));
 	}
 
 	return sum;
@@ -239,6 +244,34 @@ std::ostream& operator <<(std::ostream& os, const Broken<T>& obj)
 		if (i < obj.n - 1) os << " -> ";
 	}
 	return os;
+}
+
+//Comparison operator for equality of broken lines
+template<typename T>
+bool Broken<T>::operator ==(const Broken<T>& obj)
+{
+	if (n != obj.n) throw "\n\nThe broken lines are incomparable, due to the different number of vertices.\n\n";
+
+	for (int i = 0; i < n; i++)
+	{
+		if (data[i] != obj.data[i]) return false;
+	}
+
+	return true;
+}
+
+//Comparison operator for broken line inequality
+template<typename T>
+bool Broken<T>::operator !=(const Broken<T>& obj)
+{
+	if (n != obj.n) throw "\n\nThe broken lines are incomparable, due to the different number of vertices.\n\n";
+
+	for (int i = 0; i < n; i++)
+	{
+		if (data[i] == obj.data[i]) return false;
+	}
+
+	return true;
 }
 
 //Vertex Read/Write Operator
@@ -444,6 +477,83 @@ void add_task(Broken<T>* mas_obj, int* count)
 	*count += 1;
 }
 
+//Rewrites the vertex
+template<typename T>
+void rewrite_vertex(Broken<T>* mas_obj, int count)
+{
+	int n = 0, m = 0;
+	Points<T> p;
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Choose in which polyline the vertex should be rewritten?(counting from zero): ";
+		std::cin >> n;
+	} while (n < 0 || n >= count);
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Choose which vertex you want to overwrite?(counting from zero): ";
+		std::cin >> m;
+	} while (m < 0 || m >= mas_obj[n].get_n());
+
+	std::cout << "\nEnter x: ";
+	std::cin >> p.x;
+	std::cout << "Enter y: ";
+	std::cin >> p.y;
+
+	mas_obj[n][m] = p;
+}
+
+//Displays the vertex of the polyline
+template<typename T>
+void input_vertex(Broken<T>* mas_obj, int count)
+{
+	int n = 0, m = 0;
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Choose from which polyline to display the vertex?(counting from zero): ";
+		std::cin >> n;
+	} while (n < 0 || n >= count);
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Which vertex to display?(counting from zero): ";
+		std::cin >> m;
+	} while (m < 0 || m >= mas_obj[n].get_n());
+
+	std::cout << "\nVertex: " << mas_obj[n][m] << "\n\n";
+	system("pause");
+}
+
+template<typename T>
+void compare_broken(Broken<T>* mas_obj, int count)
+{
+	int n = 0, m = 0;
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Select the first vertex (counting from zero): ";
+		std::cin >> n;
+	} while (n < 0 || n >= count);
+
+	do
+	{
+		std::cout << "Select the second vertex (counting from zero): ";
+		std::cin >> m;
+	} while (m < 0 || m >= count || m == n);
+
+	if (mas_obj[n] == mas_obj[m]) std::cout << "Broken lines are equal\n\n";
+	else std::cout << "Broken lines are not equal\n\n";
+
+	system("pause");
+}
+
 //---------------------------------------------------------
 
 //Create a polyline (for std::complex<>)
@@ -499,6 +609,52 @@ void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 
 	mas_obj[*count] = tmp;
 	*count += 1;
+}
+
+//Rewrites the vertex(for std::complex<>)
+template<typename S>
+void rewrite_vertex(Broken<std::complex<S>>* mas_obj, int count)
+{
+	int n = 0, m = 0;
+	Points<std::complex<S>> p;
+	S num = 0;
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Choose in which polyline the vertex should be rewritten?(counting from zero): ";
+		std::cin >> n;
+	} while (n < 0 || n >= count);
+
+	std::cout << "\n";
+	do
+	{
+		std::cout << "Choose which vertex you want to overwrite?(counting from zero): ";
+		std::cin >> m;
+	} while (m < 0 || m >= mas_obj[n].get_n());
+
+	std::cout << "\nEnter x: ";
+
+	std::cout << "\n\tEnter real: ";
+	std::cin >> num;
+	p.x.real(num);
+
+	std::cout << "\tEnter imag: ";
+	std::cin >> num;
+	p.x.imag(num);
+
+
+	std::cout << "\nEnter y: ";
+
+	std::cout << "\n\tEnter real: ";
+	std::cin >> num;
+	p.y.real(num);
+
+	std::cout << "\tEnter imag: ";
+	std::cin >> num;
+	p.y.imag(num);
+
+	mas_obj[n][m] = p;
 }
 
 //Adding a vertex to the beginning of a polyline (for std::complex<>)
@@ -723,14 +879,17 @@ int main()
 				menu();
 				std::cin >> n;
 				if (n == 1) create_polyline(mas_obj, &count);
-				if (n == 2) output_vertices(mas_obj, count);
-				if (n == 3) len_poly(mas_obj, count);
-				if (n == 4) ver_beg(mas_obj, count);
-				if (n == 5) ver_back(mas_obj, count);
-				if (n == 6) sum_ver(mas_obj, &count);
-				if (n == 7) add_task(mas_obj, &count);
-				if (n == 8) change_precision<int>();
-				if (n == 9) break;
+				if (n == 2) rewrite_vertex(mas_obj, count);
+				if (n == 3) input_vertex(mas_obj, count);
+				if (n == 4) output_vertices(mas_obj, count);
+				if (n == 5) len_poly(mas_obj, count);
+				if (n == 6) ver_beg(mas_obj, count);
+				if (n == 7) ver_back(mas_obj, count);
+				if (n == 8) sum_ver(mas_obj, &count);
+				if (n == 9) add_task(mas_obj, &count);
+				if (n == 10) compare_broken(mas_obj, count);
+				if (n == 11) change_precision<int>();
+				if (n == 12) break;
 			}
 			catch (const char* ex)
 			{
@@ -751,14 +910,17 @@ int main()
 				menu();
 				std::cin >> n;
 				if (n == 1) create_polyline(mas_obj, &count);
-				if (n == 2) output_vertices(mas_obj, count);
-				if (n == 3) len_poly(mas_obj, count);
-				if (n == 4) ver_beg(mas_obj, count);
-				if (n == 5) ver_back(mas_obj, count);
-				if (n == 6) sum_ver(mas_obj, &count);
-				if (n == 7) add_task(mas_obj, &count);
-				if (n == 8) change_precision<float>();
-				if (n == 9) break;
+				if (n == 2) rewrite_vertex(mas_obj, count);
+				if (n == 3) input_vertex(mas_obj, count);
+				if (n == 4) output_vertices(mas_obj, count);
+				if (n == 5) len_poly(mas_obj, count);
+				if (n == 6) ver_beg(mas_obj, count);
+				if (n == 7) ver_back(mas_obj, count);
+				if (n == 8) sum_ver(mas_obj, &count);
+				if (n == 9) add_task(mas_obj, &count);
+				if (n == 10) compare_broken(mas_obj, count);
+				if (n == 11) change_precision<float>();
+				if (n == 12) break;
 			}
 			catch (const char* ex)
 			{
@@ -779,14 +941,17 @@ int main()
 				menu();
 				std::cin >> n;
 				if (n == 1) create_polyline(mas_obj, &count);
-				if (n == 2) output_vertices(mas_obj, count);
-				if (n == 3) len_poly(mas_obj, count);
-				if (n == 4) ver_beg(mas_obj, count);
-				if (n == 5) ver_back(mas_obj, count);
-				if (n == 6) sum_ver(mas_obj, &count);
-				if (n == 7) add_task(mas_obj, &count);
-				if (n == 8) change_precision<double>();
-				if (n == 9) break;
+				if (n == 2) rewrite_vertex(mas_obj, count);
+				if (n == 3) input_vertex(mas_obj, count);
+				if (n == 4) output_vertices(mas_obj, count);
+				if (n == 5) len_poly(mas_obj, count);
+				if (n == 6) ver_beg(mas_obj, count);
+				if (n == 7) ver_back(mas_obj, count);
+				if (n == 8) sum_ver(mas_obj, &count);
+				if (n == 9) add_task(mas_obj, &count);
+				if (n == 10) compare_broken(mas_obj, count);
+				if (n == 11) change_precision<double>();
+				if (n == 12) break;
 			}
 			catch (const char* ex)
 			{
@@ -807,14 +972,17 @@ int main()
 				menu();
 				std::cin >> n;
 				if (n == 1) create_polyline(mas_obj, &count);
-				if (n == 2) output_vertices(mas_obj, count);
-				if (n == 3) len_poly(mas_obj, count);
-				if (n == 4) ver_beg(mas_obj, count);
-				if (n == 5) ver_back(mas_obj, count);
-				if (n == 6) sum_ver(mas_obj, &count);
-				if (n == 7) add_task(mas_obj, &count);
-				if (n == 8) change_precision<std::complex<float>>();
-				if (n == 9) break;
+				if (n == 2) rewrite_vertex(mas_obj, count);
+				if (n == 3) input_vertex(mas_obj, count);
+				if (n == 4) output_vertices(mas_obj, count);
+				if (n == 5) len_poly(mas_obj, count);
+				if (n == 6) ver_beg(mas_obj, count);
+				if (n == 7) ver_back(mas_obj, count);
+				if (n == 8) sum_ver(mas_obj, &count);
+				if (n == 9) add_task(mas_obj, &count);
+				if (n == 10) compare_broken(mas_obj, count);
+				if (n == 11) change_precision<std::complex<float>>();
+				if (n == 12) break;
 			}
 			catch (const char* ex)
 			{
@@ -835,14 +1003,17 @@ int main()
 				menu();
 				std::cin >> n;
 				if (n == 1) create_polyline(mas_obj, &count);
-				if (n == 2) output_vertices(mas_obj, count);
-				if (n == 3) len_poly(mas_obj, count);
-				if (n == 4) ver_beg(mas_obj, count);
-				if (n == 5) ver_back(mas_obj, count);
-				if (n == 6) sum_ver(mas_obj, &count);
-				if (n == 7) add_task(mas_obj, &count);
-				if (n == 8) change_precision<std::complex<double>>();
-				if (n == 9) break;
+				if (n == 2) rewrite_vertex(mas_obj, count);
+				if (n == 3) input_vertex(mas_obj, count);
+				if (n == 4) output_vertices(mas_obj, count);
+				if (n == 5) len_poly(mas_obj, count);
+				if (n == 6) ver_beg(mas_obj, count);
+				if (n == 7) ver_back(mas_obj, count);
+				if (n == 8) sum_ver(mas_obj, &count);
+				if (n == 9) add_task(mas_obj, &count);
+				if (n == 10) compare_broken(mas_obj, count);
+				if (n == 11) change_precision<std::complex<double>>();
+				if (n == 12) break;
 			}
 			catch (const char* ex)
 			{
