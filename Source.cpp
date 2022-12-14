@@ -3,8 +3,9 @@
 #include <windows.h>
 #include<conio.h>
 #include <complex>
-#include<math.h>
 
+
+const double PI = 3.1415;
 
 template<typename T>
 struct Points 
@@ -195,11 +196,14 @@ Broken<T> Broken<T>:: operator +(const Broken<T>& obj) const
 template<typename T>
 void Broken<T>:: operator =(const Broken<T>& obj)
 {
-	delete [] data;
+	delete[] data;
 	data = new Points<T>[obj.cap];
+
 	n = obj.n;
 	cap = obj.cap;
-	for (int i = 0; i < n; i++) {
+
+	for (int i = 0; i < n; i++)
+	{
 		if (i < cap) data[i] = obj.data[i];
 		else throw "Error! Access outside of allocated memory.\n\n";
 	}
@@ -221,7 +225,7 @@ void operator +=(const Points<T>& p, Broken<T>& obj)
 	
 	Points<T>* tmp_data = new Points<T>[obj.cap];
 	
-	for (int i = 0; i < obj.n; i++) 
+	for (int i = 0; i < obj.n; i++)
 	{
 		if (i < obj.cap) tmp_data[i + 1] = obj.data[i];
 		else throw "Error! Access outside of allocated memory.";
@@ -265,13 +269,15 @@ template<typename T>
 bool Broken<T>::operator !=(const Broken<T>& obj)
 {
 	if (n != obj.n) throw "\n\nThe broken lines are incomparable, due to the different number of vertices.\n\n";
+	int count = 0;
 
 	for (int i = 0; i < n; i++)
 	{
-		if (data[i] == obj.data[i]) return false;
+		if (data[i] == obj.data[i]) count++;
 	}
 
-	return true;
+	if (count == n) return false;
+	else true;
 }
 
 //Vertex Read/Write Operator
@@ -301,14 +307,12 @@ template<typename T>
 void create_polyline(Broken<T>* mas_obj, int* count)
 {
 	int n = 0;
-	Points<T> p = { 0 , 0 };
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "The maximum number of vertices in a polyline: ";
+		std::cout << "\nThe maximum number of vertices in a polyline: ";
 		std::cin >> n;
-	} while (n <= 0);
+	} while (n <= 0 || n != (int)n);
 
 	Broken<T> tmp(n);
 
@@ -316,17 +320,16 @@ void create_polyline(Broken<T>* mas_obj, int* count)
 	{
 		std::cout << "How many vertices do you want to add now?: ";
 		std::cin >> n;
-	} while (n <= 0 || n > tmp.get_cap());
+	} while (n <= 0 || n > tmp.get_cap() || n != (int)n);
 	
 
 	for (int i = 0; i < n; i++)
 	{
 		tmp.set_n();
 		std::cout << "\nEnter x: ";
-		std::cin >> p.x;
+		std::cin >> tmp[i].x;
 		std::cout << "Enter y: ";
-		std::cin >> p.y;
-		tmp[i] = p;
+		std::cin >> tmp[i].y;
 	}
 
 	mas_obj[*count] = tmp;
@@ -339,18 +342,16 @@ void output_vertices(Broken<T>* mas_obj, int count)
 {
 	int n = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Which polyline vertices do you want to get?(counting from zero): ";
+		std::cout << "\nWhich polyline vertices do you want to get?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 	
 
 	std::cout << "\nVertices: ";
-	std::cout << mas_obj[n];
+	std::cout << mas_obj[n] << "\n\n";
 
-	std::cout << "\n\n";
 	system("pause");
 }
 
@@ -360,15 +361,13 @@ void len_poly(Broken<T>* mas_obj, int count)
 {
 	int n = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Which polyline length do you want to calculate?(counting from zero): ";
+		std::cout << "\nWhich polyline length do you want to calculate?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
-	std::cout << "The length of the polyline is " << mas_obj[n].len_broken();
-	std::cout << "\n\n";
+	std::cout << "The length of the polyline is " << mas_obj[n].len_broken() << "\n\n";
 	system("pause");
 }
 
@@ -379,12 +378,11 @@ void ver_beg(Broken<T>* mas_obj, int count)
 	int n = 0;
 	Points<T> p;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "In which polyline do I need to add a vertex to the beginning?(counting from zero): ";
+		std::cout << "\nIn which polyline do I need to add a vertex to the beginning?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
 	std::cout << "\nEnter x: ";
 	std::cin >> p.x;
@@ -401,12 +399,11 @@ void ver_back(Broken<T>* mas_obj, int count)
 	int n = 0;
 	Points<T> p;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "In which polyline do I need to add a vertex to the beginning?(counting from zero): ";
+		std::cout << "\nIn which polyline do I need to add a vertex to the beginning?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
 	std::cout << "\nEnter x: ";
 	std::cin >> p.x;
@@ -422,18 +419,17 @@ void sum_ver(Broken<T>* mas_obj, int* count)
 {
 	int n = 0, m = 0;
 	
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Select the first vertex (counting from zero): ";
+		std::cout << "\nSelect the FIRST vertex (counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= *count);
+	} while (n < 0 || n >= *count || n != (int)n);
 
 	do
 	{
-		std::cout << "Select the second vertex (counting from zero): ";
+		std::cout << "\nSelect the SECOND vertex (counting from zero): ";
 		std::cin >> m;
-	} while (m < 0 || m >= *count);
+	} while (m < 0 || m >= *count || m != (int)m);
 
 	mas_obj[*count] = mas_obj[n] + mas_obj[m];
 	*count += 1;
@@ -443,26 +439,25 @@ void sum_ver(Broken<T>* mas_obj, int* count)
 template<typename T>
 void add_task(Broken<T>* mas_obj, int* count)
 {
-	Points<T> p = { 0, 0 };
-	double phi = 0, a = 0, pi = 3.1415;
+	Points<T> p;
+	double phi = 0, a = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Set the length of the side: ";
+		std::cout << "\nSet the LEIGHT of the side: ";
 		std::cin >> a;
 	} while (a <= 0);
 
 	do
 	{
-		std::cout << "Set the angle at the top: ";
+		std::cout << "\nSet the ANGLE at the top: ";
 		std::cin >> phi;
 	} while (phi < 0 || phi > 180);
 
 
 	mas_obj[*count] += p;
 
-	phi = pi/2 - ((phi * pi) / 360);
+	phi = PI/2 - ((phi * PI) / 360);
 	p.x = p.x + a * cos(phi);
 	p.y = p.y + a * sin(phi);
 	mas_obj[*count] += p;
@@ -482,28 +477,23 @@ template<typename T>
 void rewrite_vertex(Broken<T>* mas_obj, int count)
 {
 	int n = 0, m = 0;
-	Points<T> p;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Choose in which polyline the vertex should be rewritten?(counting from zero): ";
+		std::cout << "\nChoose in which polyline the vertex should be rewritten?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Choose which vertex you want to overwrite?(counting from zero): ";
+		std::cout << "\nChoose which vertex you want to overwrite?(counting from zero): ";
 		std::cin >> m;
-	} while (m < 0 || m >= mas_obj[n].get_n());
+	} while (m < 0 || m >= mas_obj[n].get_n() || m != (int)m);
 
 	std::cout << "\nEnter x: ";
-	std::cin >> p.x;
+	std::cin >> mas_obj[n][m].x;
 	std::cout << "Enter y: ";
-	std::cin >> p.y;
-
-	mas_obj[n][m] = p;
+	std::cin >> mas_obj[n][m].y;
 }
 
 //Displays the vertex of the polyline
@@ -512,19 +502,17 @@ void input_vertex(Broken<T>* mas_obj, int count)
 {
 	int n = 0, m = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Choose from which polyline to display the vertex?(counting from zero): ";
+		std::cout << "\nChoose from which polyline to display the vertex?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Which vertex to display?(counting from zero): ";
+		std::cout << "\nWhich vertex to display?(counting from zero): ";
 		std::cin >> m;
-	} while (m < 0 || m >= mas_obj[n].get_n());
+	} while (m < 0 || m >= mas_obj[n].get_n() || m != (int)m);
 
 	std::cout << "\nVertex: " << mas_obj[n][m] << "\n\n";
 	system("pause");
@@ -535,18 +523,17 @@ void compare_broken(Broken<T>* mas_obj, int count)
 {
 	int n = 0, m = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Select the first vertex (counting from zero): ";
+		std::cout << "\nSelect the FIRST polyline (counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
 	do
 	{
-		std::cout << "Select the second vertex (counting from zero): ";
+		std::cout << "\nSelect the SECOND polyline (counting from zero): ";
 		std::cin >> m;
-	} while (m < 0 || m >= count || m == n);
+	} while (m < 0 || m >= count || m == n || m != (int)m);
 
 	if (mas_obj[n] == mas_obj[m]) std::cout << "Broken lines are equal\n\n";
 	else std::cout << "Broken lines are not equal\n\n";
@@ -561,15 +548,13 @@ template<typename S>
 void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 {
 	int n = 0;
-	Points<std::complex<S>> p;
 	S num = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "The maximum number of vertices in a polyline: ";
+		std::cout << "\nThe maximum number of vertices in a polyline: ";
 		std::cin >> n;
-	} while (n <= 0);
+	} while (n <= 0 || n != (int)n);
 
 	Broken<std::complex<S>> tmp(n);
 
@@ -577,7 +562,7 @@ void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 	{
 		std::cout << "How many vertices do you want to add now?: ";
 		std::cin >> n;
-	} while (n <= 0 || n > tmp.get_cap());
+	} while (n <= 0 || n > tmp.get_cap() || n != (int)n);
 
 
 	for (int i = 0; i < n; i++)
@@ -587,24 +572,22 @@ void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 
 		std::cout << "\n\tEnter real: ";
 		std::cin >> num;
-		p.x.real(num);
+		tmp[i].x.real(num);
 
 		std::cout << "\tEnter imag: ";
 		std::cin >> num;
-		p.x.imag(num);
+		tmp[i].x.imag(num);
 
 
 		std::cout << "\nEnter y: ";
 
 		std::cout << "\n\tEnter real: ";
 		std::cin >> num;
-		p.y.real(num);
+		tmp[i].y.real(num);
 
 		std::cout << "\tEnter imag: ";
 		std::cin >> num;
-		p.y.imag(num);
-
-		tmp[i] = p;
+		tmp[i].y.imag(num);
 	}
 
 	mas_obj[*count] = tmp;
@@ -616,45 +599,40 @@ template<typename S>
 void rewrite_vertex(Broken<std::complex<S>>* mas_obj, int count)
 {
 	int n = 0, m = 0;
-	Points<std::complex<S>> p;
 	S num = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Choose in which polyline the vertex should be rewritten?(counting from zero): ";
+		std::cout << "\nChoose in which polyline the vertex should be rewritten?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Choose which vertex you want to overwrite?(counting from zero): ";
+		std::cout << "\nChoose which vertex you want to overwrite?(counting from zero): ";
 		std::cin >> m;
-	} while (m < 0 || m >= mas_obj[n].get_n());
+	} while (m < 0 || m >= mas_obj[n].get_n() || m != (int)m);
 
 	std::cout << "\nEnter x: ";
 
 	std::cout << "\n\tEnter real: ";
 	std::cin >> num;
-	p.x.real(num);
+	mas_obj[n][m].x.real(num);
 
 	std::cout << "\tEnter imag: ";
 	std::cin >> num;
-	p.x.imag(num);
+	mas_obj[n][m].x.imag(num);
 
 
 	std::cout << "\nEnter y: ";
 
 	std::cout << "\n\tEnter real: ";
 	std::cin >> num;
-	p.y.real(num);
+	mas_obj[n][m].y.real(num);
 
 	std::cout << "\tEnter imag: ";
 	std::cin >> num;
-	p.y.imag(num);
-
-	mas_obj[n][m] = p;
+	mas_obj[n][m].y.imag(num);
 }
 
 //Adding a vertex to the beginning of a polyline (for std::complex<>)
@@ -665,12 +643,11 @@ void ver_beg(Broken<std::complex<S>>* mas_obj, int count)
 	Points<std::complex<S>> p;
 	S num = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "In which polyline do I need to add a vertex to the beginning?(counting from zero): ";
+		std::cout << "\nIn which polyline do I need to add a vertex to the beginning?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
 	std::cout << "\nEnter x: ";
 
@@ -704,12 +681,11 @@ void ver_back(Broken<std::complex<S>>* mas_obj, int count)
 	Points<std::complex<S>> p;
 	S num = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "In which polyline do I need to add a vertex to the beginning?(counting from zero): ";
+		std::cout << "\nIn which polyline do I need to add a vertex to the beginning?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
 	std::cout << "\nEnter x: ";
 
@@ -741,15 +717,13 @@ void len_poly(Broken<std::complex<S>>* mas_obj, int count)
 {
 	int n = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Which polyline length do you want to calculate?(counting from zero): ";
+		std::cout << "\nWhich polyline length do you want to calculate?(counting from zero): ";
 		std::cin >> n;
-	} while (n < 0 || n >= count);
+	} while (n < 0 || n >= count || n != (int)n);
 
-	std::cout << "The length of the polyline is " << mas_obj[n].len_broken_complex();
-	std::cout << "\n\n";
+	std::cout << "The length of the polyline is " << mas_obj[n].len_broken_complex() << "\n\n";
 	system("pause");
 }
 
@@ -758,23 +732,22 @@ template<typename S>
 void add_task(Broken<std::complex<S>>* mas_obj, int* count)
 {
 	Points<std::complex<S>> p;
-	double phi = 0, a = 0, pi = 3.1415 ,abs = 0;
+	double phi = 0, a = 0, abs = 0;
 
-	std::cout << "\n";
 	do
 	{
-		std::cout << "Set the length of the side: ";
+		std::cout << "\nSet the LEIGHT of the side: ";
 		std::cin >> a;
 	} while (a <= 0);
 
 	do
 	{
-		std::cout << "Set the angle at the top: ";
+		std::cout << "\nSet the ANGLE at the top: ";
 		std::cin >> phi;
 	} while (phi < 0 || phi > 180);
 
 	mas_obj[*count] += p;
-	phi = pi / 2 - ((phi * pi) / 360);
+	phi = PI / 2 - ((phi * PI) / 360);
 
 	abs = a * cos(phi);
 	abs *= abs;
