@@ -1,8 +1,9 @@
-#include<math.h>
 #include<iostream>
+#include<vector>
+#include <complex>
+#include<math.h>
 #include <windows.h>
 #include<conio.h>
-#include <complex>
 
 
 const double PI = 3.1415;
@@ -64,71 +65,38 @@ template<typename T>
 class Broken
 {
 private:
-	Points<T>* data;
-	int cap, n;
-	void memory();
+	std::vector<Points<T>> data;
+	int n;
 
 public:
 	Broken();
-	Broken(const int cap);
-	~Broken();
-	Broken(const Broken<T>&);
+	Broken(const int);
+	Broken(const Broken<T>&) = default;
+	~Broken() = default;
+	Broken<T>& operator =(const Broken<T>&) = default;
 	double len_broken() const;
 	double len_broken_complex() const;
 	Broken<T> operator +(const Broken<T>&) const;
-	void operator =(const Broken<T>&);
 	void operator +=(const Points<T>&);
 	template<typename V> friend void operator +=(const Points<V>&, Broken<V>&);
 	template<typename V> friend std::ostream& operator <<(std::ostream&, const Broken<V>&);
 	bool operator ==(const Broken<T>&);
 	bool operator !=(const Broken<T>&);
 	Points<T>& operator [](int);
-	int get_cap() const;
+	auto begin();
+	auto end();
 	int get_n() const;
-	void set_n();
 };
-
-//Allocating memory for an array of vertices
-template<typename T>
-void Broken<T>::memory()
-{
-	cap += 2;
-	Points<T>* tmp_data = new Points<T>[cap];
-
-	for (int i = 0; i < n; i++) {
-		if (i < cap) tmp_data[i] = data[i];
-		else throw "Error! Access outside of allocated memory.\n\n";
-	}
-
-	delete[] data;
-	data = tmp_data;
-}
 
 //Explicit default constructor
 template<typename T>
-Broken<T>::Broken() :cap(0), n(0), data(NULL) {}
+Broken<T>::Broken() :n(0) {}
 
-//Constructor for allocating memory for vertices
+//Constructor
 template<typename T>
-Broken<T>::Broken(const int cap) : cap(cap), n(0)
-{ 
-	data = new Points<T>[cap];
-}
-
-//Destructor
-template<typename T>
-Broken<T>::~Broken() { delete[] data; }
-
-//Сopy constructor
-template<typename T>
-Broken<T>::Broken(const Broken<T>& obj) : cap(obj.cap), n(obj.n)
+Broken<T>::Broken(const int n): n(n)
 {
-	data = new Points<T>[cap];
-
-	for (int i = 0; i < n; i++) {
-		if (i < cap) data[i] = obj.data[i];
-		else throw "Error! Access outside of allocated memory.\n\n";
-	}
+	data.resize(n);
 }
 
 //Calculating the length of a polyline
@@ -136,15 +104,15 @@ template<typename T>
 double Broken<T>::len_broken() const
 {
 	double sum = 0;
+	std::vector<Points<T>> tmp = data;
 
-	for (int i = 0; i < n - 1; i++) {
-		if (i >= 1 && i < n - 1 && data[i - 1] == data[i + 1]) continue;
-
+	for (int i = 0; i < n - 1; i++)
+	{
+		if (i >= 1 && tmp[i-1] == tmp[i+1]) continue;
+		
 		double x = 0, y = 0;
-
-		x = pow(data[i].x - data[i + 1].x, 2);
-		y = pow(data[i].y - data[i + 1].y, 2);
-
+		x = pow(tmp[i].x - tmp[i+1].x, 2);
+		y = pow(tmp[i].y - tmp[i+1].y, 2);
 		sum += sqrt(x + y);
 	}
 
@@ -156,15 +124,15 @@ template<typename T>
 double Broken<T>::len_broken_complex() const
 {
 	double sum = 0;
+	std::vector<Points<T>> tmp = data;
 
-	for (int i = 0; i < n - 1; i++) {
-		if (i >= 1 && i < n - 1 && data[i - 1] == data[i + 1]) continue;
-
+	for (int i = 0; i < n - 1; i++)
+	{
+		if (i >= 1 && tmp[i-1] == tmp[i+1]) continue;
+		
 		T z1, z2;
-
-		z1 = data[i].x - data[i + 1].x;
-		z2 = data[i].y - data[i + 1].y;
-
+		z1 = tmp[i].x - tmp[i+1].x;
+		z2 = tmp[i].y - tmp[i+1].y;
 		sum += sqrt(pow(std::abs(z1), 2) + pow(std::abs(z2), 2));
 	}
 
@@ -175,65 +143,34 @@ double Broken<T>::len_broken_complex() const
 template<typename T>
 Broken<T> Broken<T>:: operator +(const Broken<T>& obj) const
 {
-	Broken<T> tmp_obj(cap + obj.cap);
-	int tmp_cap = cap + obj.cap;
+	Broken<T> tmp_obj(n + obj.n);
 	tmp_obj.n = n + obj.n;
+	int c = 0;
 
-	for (int i = 0; i < n; i++) {
-		if (i < tmp_cap) tmp_obj.data[i] = data[i];
-		else throw "Error! Access outside of allocated memory.\n\n";
-	}
-
-	for (int i = n; i < tmp_obj.n; i++) {
-		if (i < tmp_cap) tmp_obj.data[i] = obj.data[i - n];
-		else throw "Error! Access outside of allocated memory.\n\n";
-	}
+	for (const auto& i : data) tmp_obj[c++] = i;
+	for (const auto& i : obj.data) tmp_obj[c++] = i;
 
 	return tmp_obj;
-}
-
-//Assignment operator
-template<typename T>
-void Broken<T>:: operator =(const Broken<T>& obj)
-{
-	delete[] data;
-	data = new Points<T>[obj.cap];
-
-	n = obj.n;
-	cap = obj.cap;
-
-	for (int i = 0; i < n; i++)
-	{
-		if (i < cap) data[i] = obj.data[i];
-		else throw "Error! Access outside of allocated memory.\n\n";
-	}
 }
 
 //Add vertex to end operator
 template<typename T>
 void Broken<T>:: operator +=(const Points<T>& p)
 {
-	if (cap <= n) memory();
-	data[n++] = p;
+	data.push_back(p);
+	n++;
 }
 
 //Operator for adding a vertex to the beginning
 template<typename T>
 void operator +=(const Points<T>& p, Broken<T>& obj)
 {
-	if (obj.cap <= obj.n) obj.memory();
+	std::vector<Points<T>> tmp_data(obj.n + 1);
+	int c = 0;
 	
-	Points<T>* tmp_data = new Points<T>[obj.cap];
-	
-	for (int i = 0; i < obj.n; i++)
-	{
-		if (i < obj.cap) tmp_data[i + 1] = obj.data[i];
-		else throw "Error! Access outside of allocated memory.";
-	}
+	for (const auto& i: obj.data) tmp_data[c++ + 1] = i;
 	
 	tmp_data[0] = p;
-	
-	delete[] obj.data;
 	obj.data = tmp_data;
 	obj.n++;
 }
@@ -242,10 +179,13 @@ void operator +=(const Points<T>& p, Broken<T>& obj)
 template<typename T>
 std::ostream& operator <<(std::ostream& os, const Broken<T>& obj)
 {
-	for (int i = 0; i < obj.n; i++)
+	int c = 0;
+
+	for (auto& i: obj.data)
 	{
-		os << obj.data[i];
-		if (i < obj.n - 1) os << " -> ";
+		os << i;
+		if (c < obj.n - 1) os << " -> ";
+		c++;
 	}
 	return os;
 }
@@ -255,11 +195,9 @@ template<typename T>
 bool Broken<T>::operator ==(const Broken<T>& obj)
 {
 	if (n != obj.n) throw "\n\nThe broken lines are incomparable, due to the different number of vertices.\n\n";
+	int c = 0;
 
-	for (int i = 0; i < n; i++)
-	{
-		if (data[i] != obj.data[i]) return false;
-	}
+	for (auto i: obj.data) if (i != data[c++]) return false;
 
 	return true;
 }
@@ -268,16 +206,7 @@ bool Broken<T>::operator ==(const Broken<T>& obj)
 template<typename T>
 bool Broken<T>::operator !=(const Broken<T>& obj)
 {
-	if (n != obj.n) throw "\n\nThe broken lines are incomparable, due to the different number of vertices.\n\n";
-	int count = 0;
-
-	for (int i = 0; i < n; i++)
-	{
-		if (data[i] == obj.data[i]) count++;
-	}
-
-	if (count == n) return false;
-	else true;
+	return !(*this == obj);
 }
 
 //Vertex Read/Write Operator
@@ -288,17 +217,23 @@ Points<T>& Broken<T>:: operator [](const int i)
 	else throw "Error! Attempt to access by case index.\n\n";
 }
 
-//Getting the capacity of an array of vertices
+//Iterator to start element
 template<typename T>
-int Broken<T>::get_cap() const { return cap; }
+auto Broken<T>::begin()
+{
+	return data.begin();
+}
+
+//Iterator to last element
+template<typename T>
+auto Broken<T>::end()
+{
+	return data.end();
+}
 
 //Getting the number of vertices in an array
 template<typename T>
 int Broken<T>::get_n() const { return n; }
-
-//Increment by one of the vertex counter in the array
-template<typename T>
-void Broken<T>::set_n() { n++; }
 
 //----------------------------------------------------------
 
@@ -310,26 +245,18 @@ void create_polyline(Broken<T>* mas_obj, int* count)
 
 	do
 	{
-		std::cout << "\nThe maximum number of vertices in a polyline: ";
-		std::cin >> n;
-	} while (n <= 0 || n != (int)n);
-
-	Broken<T> tmp(n);
-
-	do
-	{
 		std::cout << "How many vertices do you want to add now?: ";
 		std::cin >> n;
-	} while (n <= 0 || n > tmp.get_cap() || n != (int)n);
+	} while (n <= 0 || n != (int)n);
 	
+	Broken<T> tmp(n);
 
-	for (int i = 0; i < n; i++)
+	for (auto& i: tmp)
 	{
-		tmp.set_n();
 		std::cout << "\nEnter x: ";
-		std::cin >> tmp[i].x;
+		std::cin >> i.x;
 		std::cout << "Enter y: ";
-		std::cin >> tmp[i].y;
+		std::cin >> i.y;
 	}
 
 	mas_obj[*count] = tmp;
@@ -552,42 +479,34 @@ void create_polyline(Broken<std::complex<S>>* mas_obj, int* count)
 
 	do
 	{
-		std::cout << "\nThe maximum number of vertices in a polyline: ";
+		std::cout << "\nHow many vertices do you want to add now?: ";
 		std::cin >> n;
 	} while (n <= 0 || n != (int)n);
 
 	Broken<std::complex<S>> tmp(n);
 
-	do
+	for (auto& i: tmp)
 	{
-		std::cout << "How many vertices do you want to add now?: ";
-		std::cin >> n;
-	} while (n <= 0 || n > tmp.get_cap() || n != (int)n);
-
-
-	for (int i = 0; i < n; i++)
-	{
-		tmp.set_n();
 		std::cout << "\nEnter x: ";
 
 		std::cout << "\n\tEnter real: ";
 		std::cin >> num;
-		tmp[i].x.real(num);
+		i.x.real(num);
 
 		std::cout << "\tEnter imag: ";
 		std::cin >> num;
-		tmp[i].x.imag(num);
+		i.x.imag(num);
 
 
 		std::cout << "\nEnter y: ";
 
 		std::cout << "\n\tEnter real: ";
 		std::cin >> num;
-		tmp[i].y.real(num);
+		i.y.real(num);
 
 		std::cout << "\tEnter imag: ";
 		std::cin >> num;
-		tmp[i].y.imag(num);
+		i.y.imag(num);
 	}
 
 	mas_obj[*count] = tmp;
@@ -788,9 +707,7 @@ void change_precision()
 template<typename T>
 bool operator==(Points<T>& p1, Points<T>& p2)
 {
-	if (fabs(p1.x - p2.x) > p1._lambda()) return false;
-	if (fabs(p1.y - p2.y) > p1._lambda()) return false;
-	return true;
+	return !(p1 != p2);
 }
 
 //Comparison operator for inequality
@@ -806,11 +723,7 @@ bool operator!=(Points<T>& p1, Points<T>& p2)
 template<typename S>
 bool operator==(Points<std::complex<S>>& p1, Points<std::complex<S>>& p2)
 {
-	if (fabs(p1.x.real() - p2.x.real()) > p1._lambda()) return false;
-	if (fabs(p1.x.imag() - p2.x.imag()) > p1._lambda()) return false;
-	if (fabs(p1.y.real() - p2.y.real()) > p1._lambda()) return false;
-	if (fabs(p1.y.imag() - p2.y.imag()) > p1._lambda()) return false;
-	return true;
+	return !(p1 != p2);
 }
 
 //Comparison operator for inequality(for std::complex<>)
